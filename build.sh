@@ -1,12 +1,20 @@
 # build lightlda
+SELF_DIR=$(cd $(dirname ${BASH_SOURCE});pwd)
 
-git clone -b multiverso-initial git@github.com:Microsoft/multiverso.git
+git clone -b multiverso-initial https://github.com/Microsoft/multiverso.git
 
-cd multiverso
-cd third_party
-sh install.sh
-cd ..
+sh ${SELF_DIR}/install.multiverso.third_party.sh
+
+[ $? == 0 ] || { echo "failed"; exit -1; }
+
+cd ${SELF_DIR}/multiverso/
+sed -i -e \
+  "s/^LD_FLAGS = -L.*/LD_FLAGS = -L\$(THIRD_PARTY_LIB) -lzmq -lmpich -lmpl -pthread/g" \
+  Makefile
+
 make -j4 all
 
-cd ..
+[ $? == 0 ] || { echo "failed"; exit -1; }
+
+cd ${SELF_DIR}
 make -j4
